@@ -47,6 +47,26 @@ self.addEventListener('activate', function (event) {
   return self.clients.claim();
 });
 
+// function isInArray(string, array) {
+//   for (var i = 0; i < array.length; i++) {
+//     if (array[i] === string) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+
+function isInArray(string, array) {
+  var cachePath;
+  if (string.indexOf(self.origin) === 0) { // request targets domain where we serve the page from (i.e. NOT a CDN)
+    console.log('matched ', string);
+    cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
+  } else {
+    cachePath = string; // store the full request (for CDNs)
+  }
+  return array.indexOf(cachePath) > -1;
+}
+
 self.addEventListener('fetch', function (event) {
   const url = 'https://httpbin.org/get';
 
@@ -62,7 +82,8 @@ self.addEventListener('fetch', function (event) {
             })
         })
     )
-  } else if (new RegExp('\\b' + STATIC_FILES.join('\\b|\\b') + '\\b').test(event.request.url)) {
+    // } else if (new RegExp('\\b' + STATIC_FILES.join('\\b|\\b') + '\\b').test(event.request.url)) {
+  } else if (isInArray(event.request.url, STATIC_FILES)) {
     //cache only strategy    
     event.respondWith(caches.match(event.request));
   } else {
@@ -83,7 +104,8 @@ self.addEventListener('fetch', function (event) {
               .catch(function (error) {
                 return caches.open(CACHE_STATIC_NAME)
                   .then(function (cache) {
-                    if (event.request.url.indexOf('/help')) {
+                    //here more resources can be returned, css, images etc.
+                    if (event.request.headers.get('accept').includes('text/html')) {
                       return cache.match('/offline.html');
                     }
                   })
