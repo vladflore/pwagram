@@ -58,7 +58,7 @@ function createCard(data) {
   var cardTitleTextElement = document.createElement('h2');
   cardTitleTextElement.className = 'mdl-card__title-text';
   cardTitleTextElement.textContent = data.title;
-  cardTitleTextElement.style.color = 'yellow';
+  cardTitleTextElement.style.color = 'white';
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
@@ -110,17 +110,11 @@ fetch(url)
   });
 
 
-if ('caches' in window) {
-  caches.match(url)
-    .then(function (res) {
-      if (res) {
-        return res.json();
-      }
-    })
-    .then(function (data) {
-      console.log('From cache', data)
-      if (!networkDataReceived) {
-        updateUI(data);
-      }
-    })
+if ('indexedDB' in window) {
+  readAllData('posts').then(function (data) {
+    if (!networkDataReceived) {
+      console.log('From cache', data);
+      updateUI(data);
+    }
+  })
 }
