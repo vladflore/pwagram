@@ -90,7 +90,7 @@ self.addEventListener('fetch', function (event) {
         .then(function (cache) {
           return fetch(event.request)
             .then(function (res) {
-              trimCache(CACHE_DYNAMIC_NAME, 3);
+              //trimCache(CACHE_DYNAMIC_NAME, 3);
               cache.put(event.request, res.clone());
               return res;
             })
@@ -111,7 +111,7 @@ self.addEventListener('fetch', function (event) {
             return fetch(event.request)
               .then(function (res) {
                 return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
-                  trimCache(CACHE_DYNAMIC_NAME, 3);
+                  //trimCache(CACHE_DYNAMIC_NAME, 3);
                   cache.put(event.request.url, res.clone())
                   return res;
                 })
