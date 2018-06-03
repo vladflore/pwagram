@@ -1,4 +1,4 @@
-var CACHE_STATIC_NAME = 'static-v5';
+var CACHE_STATIC_NAME = 'static-v12';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 self.addEventListener('install', function (event) {
@@ -11,6 +11,7 @@ self.addEventListener('install', function (event) {
         cache.addAll([
           '/',
           '/index.html',
+          '/offline.html',
           '/src/js/app.js',
           '/src/js/feed.js',
           '/src/js/material.min.js',
@@ -45,22 +46,91 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-  event.respondWith(caches.match(event.request)
-    .then(function (response) {
-      if (response) {
-        return response;
-      } else {
-        return fetch(event.request)
-          .then(function (res) {
-            return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
-              cache.put(event.request.url, res.clone())
+  const url = 'https://httpbin.org/get';
+
+  //cache, then network strategy
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(CACHE_DYNAMIC_NAME)
+        .then(function (cache) {
+          return fetch(event.request)
+            .then(function (res) {
+              cache.put(event.request, res.clone());
               return res;
             })
-          })
-          .catch(function (error) {
-
-          });
-      }
-    })
-  );
+        })
+    )
+  } else {
+    //network fallback
+    event.respondWith(
+      caches.match(event.request)
+        .then(function (response) {
+          if (response) {
+            return response;
+          } else {
+            return fetch(event.request)
+              .then(function (res) {
+                return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+                  cache.put(event.request.url, res.clone())
+                  return res;
+                })
+              })
+              .catch(function (error) {
+                return caches.open(CACHE_STATIC_NAME).then(function (cache) {
+                  return cache.match('/offline.html');
+                })
+              });
+          }
+        })
+    )
+  }
 });
+
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(
+//    caches.match(event.request)
+//     .then(function (response) {
+//       if (response) {
+//         return response;
+//       } else {
+//         return fetch(event.request)
+//           .then(function (res) {
+//             return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+//               cache.put(event.request.url, res.clone())
+//               return res;
+//             })
+//           })
+//           .catch(function (error) {
+//             return caches.open(CACHE_STATIC_NAME).then(function (cache) {
+//               return cache.match('/offline.html');
+//             })
+//           });
+//       }
+//     })
+//   );
+// });
+
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(
+//     fetch(event.request)
+//       .then(function (res) {
+//         return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+//           cache.put(event.request.url, res.clone())
+//           return res;
+//         })
+//       })
+//       .catch(function (error) {
+//         return caches.match(event.request);
+//       })
+//   );
+// });
+
+//cache only
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(caches.match(event.request));
+// });
+
+//network only
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(fetch(event.request));
+// });
