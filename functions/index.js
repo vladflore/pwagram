@@ -4,8 +4,8 @@ const cors = require('cors')({ origin: true });
 
 var serviceAccount = require('./udemy-pwagram-29b2e-firebase-adminsdk-y3c51-94f28f7cb8.json');
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://udemy-pwagram-29b2e.firebaseio.com/'
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://udemy-pwagram-29b2e.firebaseio.com/'
 });
 
 exports.storePostData = functions.https.onRequest((request, response) => {
