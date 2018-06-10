@@ -129,7 +129,7 @@ if ('indexedDB' in window) {
 function sendData() {
   fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
     method: 'POST',
-    header: {
+    headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     },

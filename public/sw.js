@@ -203,9 +203,10 @@ self.addEventListener('sync', function (event) {
       readAllData('sync-posts')
         .then(function (data) {
           for (var dt of data) {
+            console.log(dt.id);
             fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
               method: 'POST',
-              header: {
+              headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
               },
