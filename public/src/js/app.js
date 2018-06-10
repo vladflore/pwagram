@@ -47,18 +47,62 @@ function displayConfirmNotification() {
   }
 }
 
+function configurePushSub() {
+  if (!('serviceWorker' in navigator)) {
+    return;
+  }
+
+  var reg;
+  navigator.serviceWorker.ready.then(function (swreg) {
+    reg = swreg;
+    return swreg.pushManager.getSubscription();
+  }).then(function (sub) {
+    if (sub === null) {
+      var vapidPublicKey = 'BItK24fqBJZUemGKB0HfW7HHtVsOcjiwTmza47grdQPRWGtfFuDSoHtglvba8PJim5u2WSzKlXfKSkwnDWxwgyA';
+      var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+      // create new subscription
+      // subscription = endpoint of that browser vendor server to which we push our push messages 
+
+      //only the server with the correponding private key may send push notifications
+      return reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidPublicKey
+      });
+    } else {
+      //there is a subscription - per browser and device
+    }
+  }).then(function (newSub) {
+    fetch('https://udemy-pwagram-29b2e.firebaseio.com/subscriptions.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ newSub })
+    }).then(function (res) {
+      if (res.ok) {
+        displayConfirmNotification();
+      }
+    }).catch(function(error){
+      console.log('Error in configurePushSub() - ',error);
+    })
+  })
+}
+
 function askForNotificationPermission() {
   Notification.requestPermission(function (result) {
     console.log('User choice:', result);
     if (result !== 'granted') {
       console.log('No notification permission granted!');
     } else {
-      displayConfirmNotification();
+      configurePushSub();
+      //displayConfirmNotification();
     }
-  }); //get permission for notif and push
+  }); //get permission for notif AND push
 }
 
-if ('Notification' in window) {
+//are these features available?
+if ('Notification' in window && 'serviceWorker' in navigator) {
   for (var i = 0; i < enableNotificationButtons.length; i++) {
     enableNotificationButtons[i].style.display = 'inline-block';
     enableNotificationButtons[i].addEventListener('click', askForNotificationPermission);

@@ -222,6 +222,8 @@ self.addEventListener('sync', function (event) {
                 res.json().then(function (resData) {
                   deleteItemFromData('sync-posts', resData.id);
                 })
+              } else {
+                console.log('[Service Worker] Syncing - Sent data NOT OK', res);
               }
             }).catch(function (error) {
               console.log('[Service Worker] Syncing - Error while sending data', error);
@@ -250,4 +252,25 @@ self.addEventListener('notificationclick', function (event) {
 self.addEventListener('notificationclose', function (event) {
   console.log('Notification was closed', event);
 });
+
+self.addEventListener('push', function (event) {
+  // !!!!!!!! if this sw on this browser on this device has a subscription to which this push message was sent
+  console.log('Push notification received', event);
+
+  var data = { title: 'New title dummy', content: 'New content dummy' };
+  if (event.data) {
+    data = JSON.parse(event.data.text());
+  }
+
+  var options = {
+    body: data.content,
+    icon: '/src/images/icons/app-icon-96x96.png',
+    badge: '/src/images/icons/app-icon-96x96.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
 
