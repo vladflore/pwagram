@@ -203,7 +203,7 @@ self.addEventListener('sync', function (event) {
       readAllData('sync-posts')
         .then(function (data) {
           for (var dt of data) {
-            fetch('https://udemy-pwagram-29b2e.firebaseio.com/posts.json', {
+            fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
               method: 'POST',
               header: {
                 'Content-Type': 'application/json',

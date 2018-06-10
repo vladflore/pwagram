@@ -103,7 +103,7 @@ function updateUI(data) {
   }
 }
 
-const url = 'https://udemy-pwagram-29b2e.firebaseio.com/posts.json';
+const url = 'https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData';
 var networkDataReceived = false;
 
 fetch(url)
