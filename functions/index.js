@@ -2,11 +2,14 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
+var serviceAccount = require('./udemy-pwagram-29b2e-firebase-adminsdk-y3c51-94f28f7cb8.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://udemy-pwagram-29b2e.firebaseio.com/'
+});
+
 exports.storePostData = functions.https.onRequest((request, response) => {
-    cors((req, res) => {
+    cors(request, response, () => {
         admin.database().ref('posts').push({
             id: request.body.id,
             title: request.body.title,

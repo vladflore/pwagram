@@ -103,7 +103,7 @@ function updateUI(data) {
   }
 }
 
-const url = 'https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData';
+const url = 'https://udemy-pwagram-29b2e.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
 fetch(url)
@@ -127,7 +127,7 @@ if ('indexedDB' in window) {
 }
 
 function sendData() {
-  fetch(url, {
+  fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
     method: 'POST',
     header: {
       'Content-Type': 'application/json',

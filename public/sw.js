@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v18';
+const CACHE_STATIC_NAME = 'static-v19';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -218,7 +218,9 @@ self.addEventListener('sync', function (event) {
             }).then(function (res) {
               console.log('[Service Worker] Syncing - Sent data', res);
               if (res.ok) {
-                deleteItemFromData('sync-posts', dt.id); //isn't working correctly!
+                res.json().then(function (resData) {
+                  deleteItemFromData('sync-posts', resData.id);
+                })
               }
             }).catch(function (error) {
               console.log('[Service Worker] Syncing - Error while sending data', error);
