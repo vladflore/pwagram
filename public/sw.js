@@ -194,3 +194,38 @@ self.addEventListener('fetch', function (event) {
 // self.addEventListener('fetch', function (event) {
 //   event.respondWith(fetch(event.request));
 // });
+
+self.addEventListener('sync', function (event) {
+  console.log('[Service Worker] Syncing - Background syncing', event);
+  if (event.tag === 'sync-new-posts') {
+    console.log('[Service Worker] Syncing - Syncing new posts', event);
+    event.waitUntil(
+      readAllData('sync-posts')
+        .then(function (data) {
+          for (var dt of data) {
+            fetch('https://udemy-pwagram-29b2e.firebaseio.com/posts.json', {
+              method: 'POST',
+              header: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                id: dt.id,
+                title: dt.title,
+                location: dt.location,
+                image: 'https://firebasestorage.googleapis.com/v0/b/udemy-pwagram-29b2e.appspot.com/o/sf-boat.jpg?alt=media&token=171ce05a-be26-4d90-918c-f62b695a48c7'
+              })
+            }).then(function (res) {
+              console.log('[Service Worker] Syncing - Sent data', res);
+              if (res.ok) {
+                deleteItemFromData('sync-posts', dt.id); //isn't working correctly!
+              }
+            }).catch(function (error) {
+              console.log('[Service Worker] Syncing - Error while sending data', error);
+            });
+          }
+        })
+    );
+  }
+});
+
