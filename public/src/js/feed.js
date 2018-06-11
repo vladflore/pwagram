@@ -12,6 +12,8 @@ var captureButton = document.querySelector('#capture-btn');
 var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
 
+var picture = null;
+
 function initializeMedia() {
   if (!('mediaDevices' in navigator)) {
     navigator.mediaDevices = {};
@@ -50,6 +52,8 @@ captureButton.addEventListener('click', function (event) {
   videoPlayer.srcObject.getVideoTracks().forEach(track => {
     track.stop();
   });
+  picture = dataURItoBlob(canvasElement.toDataURL());
+  //save this pic to firebase
 });
 
 function openCreatePostModal() {
@@ -177,18 +181,17 @@ if ('indexedDB' in window) {
 }
 
 function sendData() {
+
+  var postData = new FormData();
+  var id = new Date().toISOString();
+  postData.append('id', id);
+  postData.append('title', titleInput.value);
+  postData.append('location', locationInput.value);
+  postData.append('file', picture, id + '.png');
+
   fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      id: new Date().toISOString(),
-      title: titleInput.value,
-      location: locationInput.value,
-      image: 'https://firebasestorage.googleapis.com/v0/b/udemy-pwagram-29b2e.appspot.com/o/sf-boat.jpg?alt=media&token=171ce05a-be26-4d90-918c-f62b695a48c7'
-    })
+    body: postData
   }).then(function (res) {
     console.log('Sent data', res);
     updateUI();
@@ -209,7 +212,8 @@ form.addEventListener('submit', function (event) {
         var post = {
           id: new Date().toISOString(),
           title: titleInput.value,
-          location: locationInput.value
+          location: locationInput.value,
+          picture: picture
         };
         //write data to indexeddb
         writeData('sync-posts', post)
