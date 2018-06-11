@@ -83,6 +83,8 @@ function configurePushSub() {
     }).then(function (res) {
       if (res.ok) {
         displayConfirmNotification();
+      } else {
+        console.log('Error in configurePushSub() - ', res);
       }
     }).catch(function (error) {
       console.log('Error in configurePushSub() - ', error);

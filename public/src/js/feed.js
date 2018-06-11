@@ -53,7 +53,10 @@ captureButton.addEventListener('click', function (event) {
     track.stop();
   });
   picture = dataURItoBlob(canvasElement.toDataURL());
-  //save this pic to firebase
+});
+
+imagePicker.addEventListener('change', function (event) {
+  picture = event.target.files[0];
 });
 
 function openCreatePostModal() {
