@@ -19,6 +19,7 @@ exports.storePostData = functions.https.onRequest((request, response) => {
             location: request.body.location,
             image: request.body.image
         }).then(() => {
+            console.log('webpush: set vapid details...');
             webpush.setVapidDetails('mailto:flore.vlad@gmail.com',
                 'BItK24fqBJZUemGKB0HfW7HHtVsOcjiwTmza47grdQPRWGtfFuDSoHtglvba8PJim5u2WSzKlXfKSkwnDWxwgyA',
                 '3FeA94wYJehlsTPbAqMuW8anuFG3-jctRa6MpwCzYKE');
@@ -32,6 +33,7 @@ exports.storePostData = functions.https.onRequest((request, response) => {
                         p256dh: sub.val().keys.p256dh
                     }
                 };
+                console.log('subscriptions - pushConfig: ', pushConfig);
                 webpush.sendNotification(pushConfig, JSON.stringify({
                     title: 'New Post',
                     content: 'New Post added!',
@@ -42,6 +44,7 @@ exports.storePostData = functions.https.onRequest((request, response) => {
             });
             return response.status(201).json({ message: 'Data stored', id: request.body.id });
         }).catch((error) => {
+            console.log('Error ', error);
             response.status(500).json({ error: error });
         })
     })

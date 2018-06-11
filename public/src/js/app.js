@@ -72,19 +72,20 @@ function configurePushSub() {
       //there is a subscription - per browser and device
     }
   }).then(function (newSub) {
-    fetch('https://udemy-pwagram-29b2e.firebaseio.com/subscriptions.json', {
+    console.log(JSON.stringify(newSub));
+    return fetch('https://udemy-pwagram-29b2e.firebaseio.com/subscriptions.json', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ newSub })
+      body: JSON.stringify(newSub)
     }).then(function (res) {
       if (res.ok) {
         displayConfirmNotification();
       }
-    }).catch(function(error){
-      console.log('Error in configurePushSub() - ',error);
+    }).catch(function (error) {
+      console.log('Error in configurePushSub() - ', error);
     })
   })
 }
