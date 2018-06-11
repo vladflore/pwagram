@@ -245,7 +245,20 @@ self.addEventListener('notificationclick', function (event) {
     notification.close();
   } else {
     console.log(action);
-    notification.close();
+    event.waitUntil(
+      clients.matchAll(function (clis) {
+        var client = clis.find(function (c) {
+          return c.visibilityState === 'visible';
+        });
+        if (client !== undefined) {
+          client.navigate(notification.data.url);
+          client.focus();
+        } else {
+          clients.openWindow(notification.data.url);
+        }
+        notification.close();
+      })
+    );
   }
 });
 
@@ -257,7 +270,7 @@ self.addEventListener('push', function (event) {
   // !!!!!!!! if this sw on this browser on this device has a subscription to which this push message was sent
   console.log('Push notification received', event);
 
-  var data = { title: 'New title dummy', content: 'New content dummy' };
+  var data = { title: 'New title dummy', content: 'New content dummy', openUrl: '/' };
   if (event.data) {
     data = JSON.parse(event.data.text());
   }
@@ -265,7 +278,10 @@ self.addEventListener('push', function (event) {
   var options = {
     body: data.content,
     icon: '/src/images/icons/app-icon-96x96.png',
-    badge: '/src/images/icons/app-icon-96x96.png'
+    badge: '/src/images/icons/app-icon-96x96.png',
+    data: {
+      url: data.openUrl
+    }
   };
 
   event.waitUntil(
