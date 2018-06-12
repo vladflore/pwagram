@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v22';
+const CACHE_STATIC_NAME = 'static-v28';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -209,6 +209,8 @@ self.addEventListener('sync', function (event) {
             postData.append('id', dt.id);
             postData.append('title', dt.title);
             postData.append('location', dt.location);
+            postData.append('rawLocationLat', dt.rawLocation.lat);
+            postData.append('rawLocationLong', dt.rawLocation.long);
             postData.append('file', dt.picture, dt.id + '.png');
 
             fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {

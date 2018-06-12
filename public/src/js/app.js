@@ -70,6 +70,7 @@ function configurePushSub() {
       });
     } else {
       //there is a subscription - per browser and device
+      return sub;
     }
   }).then(function (newSub) {
     console.log(JSON.stringify(newSub));
@@ -83,8 +84,6 @@ function configurePushSub() {
     }).then(function (res) {
       if (res.ok) {
         displayConfirmNotification();
-      } else {
-        console.log('Error in configurePushSub() - ', res);
       }
     }).catch(function (error) {
       console.log('Error in configurePushSub() - ', error);

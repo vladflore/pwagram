@@ -67,64 +67,55 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
                 },
                 function (err, uploadedFile) {
                     if (!err) {
-                        admin
-                            .database()
-                            .ref("posts")
-                            .push({
-                                id: fields.id,
-                                title: fields.title,
-                                location: fields.location,
-                                image:
-                                    "https://firebasestorage.googleapis.com/v0/b/" +
-                                    bucket.name +
-                                    "/o/" +
-                                    encodeURIComponent(uploadedFile.name) +
-                                    "?alt=media&token=" +
-                                    uuid
-                            })
-                            .then(function () {
-                                webpush.setVapidDetails(
-                                    "mailto:business@academind.com",
-                                    "BKapuZ3XLgt9UZhuEkodCrtnfBo9Smo-w1YXCIH8YidjHOFAU6XHpEnXefbuYslZY9vtlEnOAmU7Mc-kWh4gfmE",
-                                    "AyVHwGh16Kfxrh5AU69E81nVWIKcUwR6a9f1X4zXT_s"
-                                );
-                                return admin
-                                    .database()
-                                    .ref("subscriptions")
-                                    .once("value");
-                            })
-                            .then(function (subscriptions) {
-                                subscriptions.forEach(function (sub) {
-                                    var pushConfig = {
-                                        endpoint: sub.val().endpoint,
-                                        keys: {
-                                            auth: sub.val().keys.auth,
-                                            p256dh: sub.val().keys.p256dh
-                                        }
-                                    };
-
-                                    webpush
-                                        .sendNotification(
-                                            pushConfig,
-                                            JSON.stringify({
-                                                title: "New Post",
-                                                content: "New Post added!",
-                                                openUrl: "/help"
-                                            })
-                                        )
-                                        .catch(function (err) {
-                                            console.log(err);
-                                        });
+                        admin.database().ref("posts").push({
+                            //id: fields.id,
+                            title: fields.title,
+                            location: fields.location,
+                            rawLocation: {
+                                lat: fields.rawLocationLat,
+                                long: fields.rawLocationLong
+                            },
+                            image:
+                                "https://firebasestorage.googleapis.com/v0/b/" +
+                                bucket.name +
+                                "/o/" +
+                                encodeURIComponent(uploadedFile.name) +
+                                "?alt=media&token=" +
+                                uuid
+                        }).then(function () {
+                            webpush.setVapidDetails(
+                                "mailto:business@academind.com",
+                                "BKapuZ3XLgt9UZhuEkodCrtnfBo9Smo-w1YXCIH8YidjHOFAU6XHpEnXefbuYslZY9vtlEnOAmU7Mc-kWh4gfmE",
+                                "AyVHwGh16Kfxrh5AU69E81nVWIKcUwR6a9f1X4zXT_s"
+                            );
+                            return admin.database().ref("subscriptions").once("value");
+                        }).then(function (subscriptions) {
+                            subscriptions.forEach(function (sub) {
+                                var pushConfig = {
+                                    endpoint: sub.val().endpoint,
+                                    keys: {
+                                        auth: sub.val().keys.auth,
+                                        p256dh: sub.val().keys.p256dh
+                                    }
+                                };
+                                console.log(pushConfig);
+                                webpush.sendNotification(
+                                    pushConfig,
+                                    JSON.stringify({
+                                        title: "New Post",
+                                        content: "New Post added!",
+                                        openUrl: "/help"
+                                    })
+                                ).catch(function (err) {
+                                    console.log('Error sending notification - ', err);
                                 });
-                                return response
-                                    .status(201)
-                                    .json({ message: "Data stored", id: fields.id });
-                            })
-                            .catch(function (err) {
-                                response.status(500).json({ error: err });
                             });
+                            return response.status(201).json({ message: "Data stored", id: fields.id });
+                        }).catch(function (err) {
+                            response.status(500).json({ error: err });
+                        });
                     } else {
-                        console.log(err);
+                        console.log('Error uploading file - ', err);
                     }
                 }
             );

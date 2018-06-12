@@ -14,6 +14,47 @@ var imagePickerArea = document.querySelector('#pick-image');
 
 var picture = null;
 
+var locationBtn = document.querySelector('#location-btn');
+var locationLoader = document.querySelector('#location-loader');
+
+var fetchedLocation = { lat: 0, long: 0 };
+
+locationBtn.addEventListener('click', function () {
+  if (!('geolocation' in navigator)) {
+    return;
+  }
+
+  var sawAlert = false;
+
+  locationBtn.style.display = 'none';
+  locationLoader.style.display = 'block';
+
+  navigator.geolocation.getCurrentPosition(function (position) {
+    locationBtn.style.display = 'inline';
+    locationLoader.style.display = 'none';
+    //TODO use an object and both coordinates
+    fetchedLocation = { lat: position.coords.latitude, long: 0 };
+    locationInput.value = 'Somewhere in this big mean world';
+    document.querySelector('#manual-location').classList.add('is-focused');
+  }, function (error) {
+    console.log(error);
+    locationBtn.style.display = 'inline';
+    locationLoader.style.display = 'none';
+    if (!sawAlert) {
+      alert('Could not fetch location, please enter manually!');
+      sawAlert = true;
+    }
+    fetchedLocation = { lat: 0, long: 0 };
+  }, { timeout: 7000 })
+
+});
+
+function initializeLocation() {
+  if (!('geolocation' in navigator)) {
+    locationBtn.style.display = 'none';
+  }
+}
+
 function initializeMedia() {
   if (!('mediaDevices' in navigator)) {
     navigator.mediaDevices = {};
@@ -61,9 +102,12 @@ imagePicker.addEventListener('change', function (event) {
 
 function openCreatePostModal() {
   initializeMedia();
+  initializeLocation();
   createPostArea.style.display = 'block';
   // setTimeout(function() {
-  createPostArea.style.transform = 'translateY(0)';
+  setTimeout(function () {
+    createPostArea.style.transform = 'translateY(0)';
+  }, 1);
   // }, 1);
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -93,11 +137,21 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.transform = 'translateY(100vh)';
   // createPostArea.style.display = 'none';
   imagePickerArea.style.display = 'none';
   videoPlayer.style.display = 'none';
   canvasElement.style.display = 'none';
+  locationBtn.style.display = 'inline';
+  locationLoader.style.display = 'none';
+  captureButton.style.display = 'inline';
+  if (videoPlayer.srcObject) {
+    videoPlayer.srcObject.getVideoTracks().forEach(track => {
+      track.stop();
+    });
+  }
+  setTimeout(function () {
+    createPostArea.style.transform = 'translateY(100vh)';
+  }, 1);
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
@@ -190,6 +244,8 @@ function sendData() {
   postData.append('id', id);
   postData.append('title', titleInput.value);
   postData.append('location', locationInput.value);
+  postData.append('rawLocationLat', fetchedLocation.lat);
+  postData.append('rawLocationLong', fetchedLocation.long);
   postData.append('file', picture, id + '.png');
 
   fetch('https://us-central1-udemy-pwagram-29b2e.cloudfunctions.net/storePostData', {
@@ -216,7 +272,8 @@ form.addEventListener('submit', function (event) {
           id: new Date().toISOString(),
           title: titleInput.value,
           location: locationInput.value,
-          picture: picture
+          picture: picture,
+          rawLocation: fetchedLocation
         };
         //write data to indexeddb
         writeData('sync-posts', post)
