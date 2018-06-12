@@ -32,8 +32,8 @@ locationBtn.addEventListener('click', function () {
   navigator.geolocation.getCurrentPosition(function (position) {
     locationBtn.style.display = 'inline';
     locationLoader.style.display = 'none';
-    //TODO use an object and both coordinates
-    fetchedLocation = { lat: position.coords.latitude, long: 0 };
+    fetchedLocation = { lat: position.coords.latitude, long: position.coords.longitude };
+    //TODO use google api to get the location name based on the coords
     locationInput.value = 'Somewhere in this big mean world';
     document.querySelector('#manual-location').classList.add('is-focused');
   }, function (error) {
