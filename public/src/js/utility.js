@@ -1,10 +1,10 @@
 //initialize idb and create the object store
 var dbPromise = idb.open('posts-store', 1, function (db) {
     if (!db.objectStoreNames.contains('posts')) {
-        db.createObjectStore('posts', { keyPath: 'id' });
+        db.createObjectStore('posts', {keyPath: 'id'});
     }
     if (!db.objectStoreNames.contains('sync-posts')) {
-        db.createObjectStore('sync-posts', { keyPath: 'id' });
+        db.createObjectStore('sync-posts', {keyPath: 'id'});
     }
 });
 
@@ -72,6 +72,6 @@ function dataURItoBlob(dataURI) {
     for (var i = 0; i < byteString.length; i++) {
         ia[i] = byteString.charCodeAt(i);
     }
-    var blob = new Blob([ab], { type: mimeString });
+    var blob = new Blob([ab], {type: mimeString});
     return blob;
 }
