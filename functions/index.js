@@ -68,7 +68,7 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
                 function (err, uploadedFile) {
                     if (!err) {
                         admin.database().ref("posts").push({
-                            //id: fields.id,
+                            id: fields.id,
                             title: fields.title,
                             location: fields.location,
                             rawLocation: {
