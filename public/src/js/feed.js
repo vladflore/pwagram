@@ -19,6 +19,9 @@ var locationLoader = document.querySelector('#location-loader');
 
 var fetchedLocation = {lat: 0, long: 0};
 
+const url = 'https://udemy-pwagram-29b2e.firebaseio.com/posts.json';
+var networkDataReceived = false;
+
 locationBtn.addEventListener('click', function () {
     if (!('geolocation' in navigator)) {
         return;
@@ -48,6 +51,85 @@ locationBtn.addEventListener('click', function () {
     }, {timeout: 7000})
 
 });
+
+captureButton.addEventListener('click', function (event) {
+    canvasElement.style.display = 'block';
+    videoPlayer.style.display = 'none';
+    captureButton.style.display = 'none';
+
+    var context = canvasElement.getContext('2d');
+    context.drawImage(videoPlayer, 0, 0, canvas.width, videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width));
+    videoPlayer.srcObject.getVideoTracks().forEach(track => {
+        track.stop();
+    });
+    picture = dataURItoBlob(canvasElement.toDataURL());
+});
+
+imagePicker.addEventListener('change', function (event) {
+    picture = event.target.files[0];
+});
+
+shareImageButton.addEventListener('click', openCreatePostModal);
+
+closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
+
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
+        alert('Please enter valid data!');
+        return;
+    }
+    closeCreatePostModal();
+
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready
+            .then(function (sw) {
+                var post = {
+                    id: new Date().toISOString(),
+                    title: titleInput.value,
+                    location: locationInput.value,
+                    picture: picture,
+                    rawLocation: fetchedLocation
+                };
+                //write data to indexeddb
+                writeData('sync-posts', post)
+                    .then(function () {
+                        //register this event on the service worker
+                        return sw.sync.register('sync-new-posts');
+                    })
+                    .then(function () {
+                        var snackbarContainer = document.querySelector('#confirmation-toast');
+                        var data = {message: 'Your post was saved for syncing!'};
+                        snackbarContainer.MaterialSnackbar.showSnackbar(data);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            });
+    } else {
+        sendData();
+    }
+});
+
+fetch(url)
+    .then(function (res) {
+        return res.json();
+    })
+    .then(function (data) {
+        networkDataReceived = true;
+        console.log('[Feed] data from server', data);
+        updateUI(data);
+    });
+
+
+if ('indexedDB' in window) {
+    readAllData('posts').then(function (data) {
+        if (!networkDataReceived) {
+            console.log('[Feed] data from cache', data);
+            updateUI(data);
+        }
+    })
+}
 
 function initializeLocation() {
     if (!('geolocation' in navigator)) {
@@ -83,47 +165,30 @@ function initializeMedia() {
     });
 }
 
-captureButton.addEventListener('click', function (event) {
-    canvasElement.style.display = 'block';
-    videoPlayer.style.display = 'none';
-    captureButton.style.display = 'none';
-
-    var context = canvasElement.getContext('2d');
-    context.drawImage(videoPlayer, 0, 0, canvas.width, videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width));
-    videoPlayer.srcObject.getVideoTracks().forEach(track => {
-        track.stop();
-    });
-    picture = dataURItoBlob(canvasElement.toDataURL());
-});
-
-imagePicker.addEventListener('change', function (event) {
-    picture = event.target.files[0];
-});
-
 function openCreatePostModal() {
     initializeMedia();
     initializeLocation();
+
     createPostArea.style.display = 'block';
     // setTimeout(function() {
     setTimeout(function () {
         createPostArea.style.transform = 'translateY(0)';
     }, 1);
     // }, 1);
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
 
-        deferredPrompt.userChoice.then(function (choiceResult) {
-            console.log(choiceResult.outcome);
-
-            if (choiceResult.outcome === 'dismissed') {
-                console.log('User cancelled installation');
-            } else {
-                console.log('User added to home screen');
-            }
-        });
-
-        deferredPrompt = null;
-    }
+    // handle the deferred prompt for 'add to home screen' feature
+    // if (deferredPrompt) {
+    //     deferredPrompt.prompt();
+    //     deferredPrompt.userChoice.then(function (choiceResult) {
+    //         console.log('[Feed] prompt user choice result:' + choiceResult.outcome);
+    //         if (choiceResult.outcome === 'dismissed') {
+    //             console.log('[Feed] user cancelled installation');
+    //         } else {
+    //             console.log('[Feed] user added to home screen');
+    //         }
+    //     });
+    //     deferredPrompt = null;
+    // }
 
     // unregister a sw
     // if ('serviceWorker' in navigator) {
@@ -153,10 +218,6 @@ function closeCreatePostModal() {
         createPostArea.style.transform = 'translateY(100vh)';
     }, 1);
 }
-
-shareImageButton.addEventListener('click', openCreatePostModal);
-
-closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
 function clearCards() {
     while (sharedMomentsArea.hasChildNodes()) {
@@ -204,41 +265,23 @@ function createCard(data) {
 // }
 
 function updateUI(data) {
+    console.log('[Feed] updating UI');
     clearCards();
-    var dataArray = [];
-    for (var key in data) {
-        dataArray.push(data[key]);
-    }
-    for (var i = 0; i < dataArray.length; i++) {
-        createCard(dataArray[i]);
-    }
-}
-
-const url = 'https://udemy-pwagram-29b2e.firebaseio.com/posts.json';
-var networkDataReceived = false;
-
-fetch(url)
-    .then(function (res) {
-        return res.json();
-    })
-    .then(function (data) {
-        networkDataReceived = true;
-        console.log('From web', data);
-        updateUI(data);
-    });
-
-
-if ('indexedDB' in window) {
-    readAllData('posts').then(function (data) {
-        if (!networkDataReceived) {
-            console.log('From cache', data);
-            updateUI(data);
+    if (data) {
+        var dataArray = [];
+        for (var key in data) {
+            dataArray.push(data[key]);
         }
-    })
+        for (var i = 0; i < dataArray.length; i++) {
+            createCard(dataArray[i]);
+        }
+    } else {
+        console.log('[Feed] no cards will be created because no data is available');
+        document.querySelector('#share-moments-headline').innerText = 'Currently no moments have been captured!';
+    }
 }
 
 function sendData() {
-
     var postData = new FormData();
     var id = new Date().toISOString();
     postData.append('id', id);
@@ -256,41 +299,3 @@ function sendData() {
         updateUI();
     });
 }
-
-form.addEventListener('submit', function (event) {
-    event.preventDefault();
-    if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
-        alert('Please enter valid data!');
-        return;
-    }
-    closeCreatePostModal();
-
-    if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.ready
-            .then(function (sw) {
-                var post = {
-                    id: new Date().toISOString(),
-                    title: titleInput.value,
-                    location: locationInput.value,
-                    picture: picture,
-                    rawLocation: fetchedLocation
-                };
-                //write data to indexeddb
-                writeData('sync-posts', post)
-                    .then(function () {
-                        //register this event on the service worker
-                        return sw.sync.register('sync-new-posts');
-                    })
-                    .then(function () {
-                        var snackbarContainer = document.querySelector('#confirmation-toast');
-                        var data = {message: 'Your post was saved for syncing!'};
-                        snackbarContainer.MaterialSnackbar.showSnackbar(data);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-            });
-    } else {
-        sendData();
-    }
-});
