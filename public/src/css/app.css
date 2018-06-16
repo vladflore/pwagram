@@ -9,3 +9,7 @@
 .enable-notifications{
   display: none
 }
+
+.offline{
+  background-color: rgb(189, 189, 189);
+}

@@ -1,5 +1,7 @@
 // var deferredPrompt;
 var enableNotificationButtons = document.querySelectorAll('.enable-notifications');
+var headerElement = document.querySelector('.mdl-layout__header');
+var mainElement = document.querySelector('main');
 var currentSubscription = null;
 
 // polyfill for Promise
@@ -40,6 +42,21 @@ window.addEventListener('beforeinstallprompt', function (event) {
 
     return true;
 });
+
+function showIndicator() {
+    console.log('[App] offline');
+    headerElement.className = 'mdl-layout__header offline';
+    mainElement.className = 'mdl-layout__content mat-typography offline';
+}
+
+function hideIndicator() {
+    console.log('[App] online');
+    headerElement.className = 'mdl-layout__header';
+    mainElement.className = 'mdl-layout__content mat-typography';
+}
+
+window.addEventListener('online', hideIndicator);
+window.addEventListener('offline', showIndicator);
 
 // check if these features are available
 if ('Notification' in window && 'serviceWorker' in navigator) {

@@ -288,7 +288,7 @@ function createCard(data) {
 function updateUI(data) {
     console.log('[Feed] updating UI');
     clearCards();
-    if (data) {
+    if (data && data.length > 0) {
         var dataArray = [];
         for (var key in data) {
             dataArray.push(data[key]);

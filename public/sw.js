@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v67';
+const CACHE_STATIC_NAME = 'static-v74';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -93,6 +93,7 @@ self.addEventListener('fetch', function (event) {
 
     //cache, then network strategy
     if (event.request.url.indexOf(url) > -1) {
+        // console.log('[SW - fetch] firebase request')
         event.respondWith(
             fetch(event.request)
                 .then(function (res) {
@@ -117,24 +118,29 @@ self.addEventListener('fetch', function (event) {
         // } else if (new RegExp('\\b' + STATIC_FILES.join('\\b|\\b') + '\\b').test(event.request.url)) {
     } else if (isInArray(event.request.url, STATIC_FILES)) {
         //cache only strategy
+        // console.log('[SW - fetch] checking static files');
         event.respondWith(caches.match(event.request));
     } else {
         //network fallback
+        // console.log('[SW - fetch] fetching from network, check before cache');
         event.respondWith(
             caches.match(event.request)
                 .then(function (response) {
                     if (response) {
+                        // console.log('[SW - fetch] request is cached so return from cache');
                         return response;
                     } else {
+                        // console.log('[SW - fetch] request is not cached so fetching from network and dynamic caching it');
                         return fetch(event.request)
                             .then(function (res) {
                                 return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
                                     //trimCache(CACHE_DYNAMIC_NAME, 3);
+                                    console.log('[SW - fetch] dynamic caching request');
                                     cache.put(event.request.url, res.clone())
                                     return res;
                                 })
-                            })
-                            .catch(function (error) {
+                            }).catch(function (error) {
+                                // console.log('[SW - fetch] error', error);
                                 return caches.open(CACHE_STATIC_NAME)
                                     .then(function (cache) {
                                         //here more resources can be returned, css, images etc.
