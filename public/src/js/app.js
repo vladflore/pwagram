@@ -134,6 +134,9 @@ function configurePushSub() {
             console.log('[Notification] error while saving the subscription:', error);
             console.log('[Notification] Subscribing for notifications requires an online connection!');
 
+            currentSubscription = sub;
+            unsubscribeFromNotification();
+
             var snackbarContainer = document.querySelector('#confirmation-toast');
             var data = {message: 'Subscribing for notifications requires an online connection!'};
             snackbarContainer.MaterialSnackbar.showSnackbar(data);
