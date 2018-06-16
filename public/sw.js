@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v59';
+const CACHE_STATIC_NAME = 'static-v61';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -20,7 +20,7 @@ var STATIC_FILES = [
     'https://fonts.googleapis.com/icon?family=Material+Icons',
     // 'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
     // '/src/css/material.indigo-pink.min.css'
-    '/src/css/material.light_green-deep-purple.min.css'
+    '/src/css/material.virtual7.min.css'
 ];
 
 function trimCache(cacheName, maxItems) {
