@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v61';
+const CACHE_STATIC_NAME = 'static-v64';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -245,20 +245,22 @@ self.addEventListener('notificationclick', function (event) {
         console.log('[Notification] user chose ' + action + ', closing notification');
         notification.close();
     } else {
-        console.log('[Notification] user chose ' + action + ', calling link:' + notification.data.url);
+        console.log('[Notification] user chose ' + action + ', calling link: ' + notification.data.url);
         event.waitUntil(
-            clients.matchAll(function (clis) {
-                var client = clis.find(function (c) {
-                    return c.visibilityState === 'visible';
-                });
-                if (client !== undefined) {
-                    client.navigate(notification.data.url);
-                    client.focus();
-                } else {
-                    clients.openWindow(notification.data.url);
-                }
-                notification.close();
-            })
+            clients.matchAll()
+                .then(function (clis) {
+                    var client = clis.find(function (c) {
+                        return c.visibilityState === 'visible';
+                    });
+                    // console.log('[Notification] found client', client);
+                    if (client !== undefined) {
+                        client.navigate(notification.data.url);
+                        client.focus();
+                    } else {
+                        clients.openWindow(notification.data.url);
+                    }
+                    notification.close();
+                })
         );
     }
 });

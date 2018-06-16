@@ -69,6 +69,9 @@ function displayConfirmNotification() {
     // if ('serviceWorker' in navigator) {
     var options = {
         body: 'You have successfully subscribed to the Notification service!',
+        data: {
+            url: '/help'
+        },
         icon: '/src/images/icons/app-icon-96x96.png',
         image: 'src/images/sf-boat.jpg',
         dir: 'ltr',
