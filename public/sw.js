@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v56';
+const CACHE_STATIC_NAME = 'static-v59';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 var STATIC_FILES = [
@@ -18,7 +18,9 @@ var STATIC_FILES = [
     '/src/images/main-image.jpg',
     'https://fonts.googleapis.com/css?family=Roboto:400,700',
     'https://fonts.googleapis.com/icon?family=Material+Icons',
-    'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
+    // 'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
+    // '/src/css/material.indigo-pink.min.css'
+    '/src/css/material.light_green-deep-purple.min.css'
 ];
 
 function trimCache(cacheName, maxItems) {
@@ -39,10 +41,12 @@ self.addEventListener('install', function (event) {
     event.waitUntil(
         caches.open(CACHE_STATIC_NAME)
             .then(function (cache) {
-                console.log('[Service Worker] Precaching App Shell');
+                console.log('[Service Worker] App Shell pre-caching');
                 cache.addAll(STATIC_FILES);
             })
     );
+
+    // event.waitUntil(self.skipWaiting()); -> install the sw without waiting for reload
 
 });
 
@@ -54,13 +58,13 @@ self.addEventListener('activate', function (event) {
             .then(function (keyList) {
                 return Promise.all(keyList.map(function (key) {
                     if (key !== CACHE_STATIC_NAME && key !== CACHE_DYNAMIC_NAME) {
-                        console.log('[Service Worker] Removing old cache.', key);
+                        console.log('[Service Worker] Removing old cache:', key);
                         return caches.delete(key);
                     }
                 }))
             })
     );
-
+    // sw activates itself immediately
     return self.clients.claim();
 });
 
@@ -86,8 +90,6 @@ function isInArray(string, array) {
 
 self.addEventListener('fetch', function (event) {
     const url = 'https://udemy-pwagram-29b2e.firebaseio.com/posts';
-
-    //console.log('fetch event', event);
 
     //cache, then network strategy
     if (event.request.url.indexOf(url) > -1) {
@@ -197,14 +199,13 @@ self.addEventListener('fetch', function (event) {
 // });
 
 self.addEventListener('sync', function (event) {
-    console.log('[Service Worker] Syncing - Background syncing', event);
+    console.log('[SW - Sync] Background syncing', event);
     if (event.tag === 'sync-new-posts') {
-        console.log('[Service Worker] Syncing - Syncing new posts', event);
+        console.log('[SW - Sync] Syncing new posts', event);
         event.waitUntil(
             readAllData('sync-posts')
                 .then(function (data) {
                     for (var dt of data) {
-
                         var postData = new FormData();
                         postData.append('id', dt.id);
                         postData.append('title', dt.title);
@@ -217,16 +218,16 @@ self.addEventListener('sync', function (event) {
                             method: 'POST',
                             body: postData
                         }).then(function (res) {
-                            console.log('[Service Worker] Syncing - Sent data', res);
+                            console.log('[SW - Sync] Sent data', res);
                             if (res.ok) {
                                 res.json().then(function (resData) {
                                     deleteItemFromData('sync-posts', resData.id);
                                 })
                             } else {
-                                console.log('[Service Worker] Syncing - Sent data NOT OK', res);
+                                console.log('[SW - Sync] Could not sent data', res);
                             }
                         }).catch(function (error) {
-                            console.log('[Service Worker] Syncing - Error while sending data', error);
+                            console.log('[SW - Sync] Error while sending data', error);
                         });
                     }
                 })
@@ -238,13 +239,13 @@ self.addEventListener('notificationclick', function (event) {
     var notification = event.notification;
     var action = event.action;
 
-    console.log(notification);
+    console.log('[Notification] notificationclick event triggered', notification);
 
     if (action === 'confirm') {
-        console.log('Confirm was chosen');
+        console.log('[Notification] user chose ' + action + ', closing notification');
         notification.close();
     } else {
-        console.log(action);
+        console.log('[Notification] user chose ' + action + ', calling link:' + notification.data.url);
         event.waitUntil(
             clients.matchAll(function (clis) {
                 var client = clis.find(function (c) {
@@ -263,12 +264,11 @@ self.addEventListener('notificationclick', function (event) {
 });
 
 self.addEventListener('notificationclose', function (event) {
-    console.log('Notification was closed', event);
+    console.log('[Notification] Notification was closed', event);
 });
 
 self.addEventListener('push', function (event) {
-    // !!!!!!!! if this sw on this browser on this device has a subscription to which this push message was sent
-    console.log('Push notification received', event);
+    console.log('[Push] Push notification received', event);
 
     var data = {title: 'New title dummy', content: 'New content dummy', openUrl: '/'};
     if (event.data) {
