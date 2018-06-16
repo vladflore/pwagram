@@ -36,11 +36,30 @@ locationBtn.addEventListener('click', function () {
         locationBtn.style.display = 'inline';
         locationLoader.style.display = 'none';
         fetchedLocation = {lat: position.coords.latitude, long: position.coords.longitude};
-        //TODO use google api to get the location name based on the coords
-        locationInput.value = 'Somewhere in this big mean world';
+        var key = 'AIzaSyD38rUJZodx_MSKzlJ0Fm0Qn9kVb7NvGXU';
+        var locationLink = [`https://maps.googleapis.com/maps/api/geocode/json?latlng=${fetchedLocation.lat},${fetchedLocation.long}`,
+            `key=${key}`]
+            .join('&');
+        fetch(locationLink)
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (responseData) {
+                console.log('[Geolocation] fetched location', responseData);
+                if (responseData.status === 'OK') {
+                    locationInput.value = responseData.results[0].formatted_address;
+                } else {
+                    console.log('[Geolocation] no locations could be determined');
+                }
+            })
+            .catch(function (error) {
+                console.log('[Geolocation] error while fetching location', error);
+                locationInput.value = 'Somewhere in this big mean world';
+            });
+
         document.querySelector('#manual-location').classList.add('is-focused');
     }, function (error) {
-        console.log(error);
+        console.log('[Geolocation] error', error);
         locationBtn.style.display = 'inline';
         locationLoader.style.display = 'none';
         if (!sawAlert) {
@@ -209,6 +228,8 @@ function closeCreatePostModal() {
     locationBtn.style.display = 'inline';
     locationLoader.style.display = 'none';
     captureButton.style.display = 'inline';
+    titleInput.value = '';
+    locationInput.value = '';
     if (videoPlayer.srcObject) {
         videoPlayer.srcObject.getVideoTracks().forEach(track => {
             track.stop();
