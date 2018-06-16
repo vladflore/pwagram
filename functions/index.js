@@ -84,9 +84,9 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
                                 uuid
                         }).then(function () {
                             webpush.setVapidDetails(
-                                "mailto:business@academind.com",
-                                "BKapuZ3XLgt9UZhuEkodCrtnfBo9Smo-w1YXCIH8YidjHOFAU6XHpEnXefbuYslZY9vtlEnOAmU7Mc-kWh4gfmE",
-                                "AyVHwGh16Kfxrh5AU69E81nVWIKcUwR6a9f1X4zXT_s"
+                                "mailto:flore.vlad@gmail.com",
+                                "BItK24fqBJZUemGKB0HfW7HHtVsOcjiwTmza47grdQPRWGtfFuDSoHtglvba8PJim5u2WSzKlXfKSkwnDWxwgyA",
+                                "3FeA94wYJehlsTPbAqMuW8anuFG3-jctRa6MpwCzYKE"
                             );
                             return admin.database().ref("subscriptions").once("value");
                         }).then(function (subscriptions) {
