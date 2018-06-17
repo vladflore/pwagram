@@ -55,8 +55,8 @@ function hideIndicator() {
     mainElement.className = 'mdl-layout__content mat-typography';
 }
 
-window.addEventListener('online', hideIndicator);
-window.addEventListener('offline', showIndicator);
+// window.addEventListener('online', hideIndicator);
+// window.addEventListener('offline', showIndicator);
 
 // check if these features are available
 if ('Notification' in window && 'serviceWorker' in navigator) {

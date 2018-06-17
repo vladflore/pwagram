@@ -1,8 +1,8 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v82';
-const CACHE_DYNAMIC_NAME = 'dynamic-v3';
+const CACHE_STATIC_NAME = 'static-v88';
+const CACHE_DYNAMIC_NAME = 'dynamic-v8';
 
 var STATIC_FILES = [
     '/',
@@ -14,6 +14,9 @@ var STATIC_FILES = [
     '/src/js/idb.js',
     '/src/js/material.min.js',
     '/src/css/app.css',
+    '/src/css/app-offline.css',
+    '/src/css/help.css',
+    '/src/css/help-offline.css',
     '/src/css/feed.css',
     '/src/images/main-image.jpg',
     'https://fonts.googleapis.com/css?family=Roboto:400,700',
@@ -42,11 +45,11 @@ self.addEventListener('install', function (event) {
         caches.open(CACHE_STATIC_NAME)
             .then(function (cache) {
                 console.log('[Service Worker] App Shell pre-caching');
-                cache.addAll(STATIC_FILES);
-            })
+                return cache.addAll(STATIC_FILES);
+            }).then(function () {
+            return self.skipWaiting(); // install the sw without waiting for reload
+        })
     );
-
-    event.waitUntil(self.skipWaiting()); // install the sw without waiting for reload
 });
 
 self.addEventListener('activate', function (event) {
@@ -92,7 +95,7 @@ self.addEventListener('fetch', function (event) {
 
     //cache, then network strategy
     if (event.request.url.indexOf(url) > -1) {
-        // console.log('[SW - fetch] firebase request')
+        // console.log('[SW - fetch] url:', event.request.url);
         event.respondWith(
             fetch(event.request)
                 .then(function (res) {
@@ -117,29 +120,52 @@ self.addEventListener('fetch', function (event) {
         // } else if (new RegExp('\\b' + STATIC_FILES.join('\\b|\\b') + '\\b').test(event.request.url)) {
     } else if (isInArray(event.request.url, STATIC_FILES)) {
         //cache only strategy
-        // console.log('[SW - fetch] checking static files');
-        event.respondWith(caches.match(event.request));
+        // console.log('[SW - fetch] static url:', event.request.url);
+
+        event.respondWith(
+            fetch(event.request)
+                .then(function (res) {
+                    // console.log('[SW - fetch] ONLINE return from static cache:' + event.request.url);
+                    return caches.match(event.request)
+                })
+                .catch(function (error) {
+                    // console.log('[SW - fetch] OFFLINE return from static cache:' + event.request.url);
+                    if (event.request.url.includes('app.css')) {
+                        // console.log('[SW - fetch] app.css -> app-offline.css');
+                        return caches.match('/src/css/app-offline.css');
+                    } else if (event.request.url.includes('help.css')) {
+                        // console.log('[SW - fetch] help.css -> help-offline.css');
+                        return caches.match('/src/css/help-offline.css');
+                    } else {
+                        return caches.match(event.request)
+                    }
+                })
+        );
     } else {
         //network fallback
+        // console.log('[SW - fetch] url:', event.request.url);
         // console.log('[SW - fetch] fetching from network, check before cache');
         event.respondWith(
             caches.match(event.request)
                 .then(function (response) {
                     if (response) {
-                        // console.log('[SW - fetch] request is cached so return from cache');
+                        // console.log('[SW - fetch] url:', event.request.url);
+                        // console.log('[SW - fetch] request is cached, return from cache');
                         return response;
                     } else {
                         // console.log('[SW - fetch] request is not cached so fetching from network and dynamic caching it');
                         return fetch(event.request)
                             .then(function (res) {
+                                // console.log('[SW - fetch] url:', event.request.url);
+                                // console.log('[SW - fetch] fetching from network', res);
                                 return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
                                     //trimCache(CACHE_DYNAMIC_NAME, 3);
-                                    console.log('[SW - fetch] dynamic caching request');
-                                    cache.put(event.request.url, res.clone())
+                                    // console.log('[SW - fetch] dynamic caching request');
+                                    cache.put(event.request.url, res.clone());
                                     return res;
                                 })
                             }).catch(function (error) {
-                                // console.log('[SW - fetch] error', error);
+                                // console.log('[SW - fetch] ressource cannot be fetched from network, respond with custom page');
                                 return caches.open(CACHE_STATIC_NAME)
                                     .then(function (cache) {
                                         //here more resources can be returned, css, images etc.
