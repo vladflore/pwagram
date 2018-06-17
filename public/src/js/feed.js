@@ -6,8 +6,8 @@ var form = document.querySelector('form');
 var titleInput = document.querySelector('#title');
 var locationInput = document.querySelector('#location');
 
-var videoPlayer = document.querySelector('#player');
-var canvasElement = document.querySelector('#canvas');
+var video = document.querySelector('#player');
+var canvas = document.querySelector('#canvas');
 var captureButton = document.querySelector('#capture-btn');
 var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
@@ -72,16 +72,19 @@ locationBtn.addEventListener('click', function () {
 });
 
 captureButton.addEventListener('click', function (event) {
-    canvasElement.style.display = 'block';
-    videoPlayer.style.display = 'none';
+    canvas.style.display = 'block';
+    video.style.display = 'none';
     captureButton.style.display = 'none';
 
-    var context = canvasElement.getContext('2d');
-    context.drawImage(videoPlayer, 0, 0, canvas.width, videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width));
-    videoPlayer.srcObject.getVideoTracks().forEach(track => {
+    // context.drawImage(video, 0, 0, canvas.width, video.videoHeight / (video.videoWidth / canvas.width));
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    video.srcObject.getVideoTracks().forEach(track => {
         track.stop();
     });
-    picture = dataURItoBlob(canvasElement.toDataURL());
+    picture = dataURItoBlob(canvas.toDataURL());
 });
 
 imagePicker.addEventListener('change', function (event) {
@@ -181,8 +184,8 @@ function initializeMedia() {
 
     navigator.mediaDevices.getUserMedia({video: true})
         .then(function (stream) {
-            videoPlayer.srcObject = stream;
-            videoPlayer.style.display = 'block';
+            video.srcObject = stream;
+            video.style.display = 'block';
         }).catch(function (error) {
         imagePickerArea.style.display = 'block';
     });
@@ -227,13 +230,13 @@ function openCreatePostModal() {
 function closeCreatePostModal() {
     // createPostArea.style.display = 'none';
     imagePickerArea.style.display = 'none';
-    videoPlayer.style.display = 'none';
-    canvasElement.style.display = 'none';
+    video.style.display = 'none';
+    canvas.style.display = 'none';
     locationBtn.style.display = 'inline';
     locationLoader.style.display = 'none';
     captureButton.style.display = 'inline';
-    if (videoPlayer.srcObject) {
-        videoPlayer.srcObject.getVideoTracks().forEach(track => {
+    if (video.srcObject) {
+        video.srcObject.getVideoTracks().forEach(track => {
             track.stop();
         });
     }
