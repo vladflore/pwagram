@@ -98,6 +98,7 @@ form.addEventListener('submit', function (event) {
         alert('Please enter valid data!');
         return;
     }
+
     closeCreatePostModal();
 
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
@@ -110,6 +111,7 @@ form.addEventListener('submit', function (event) {
                     picture: picture,
                     rawLocation: fetchedLocation
                 };
+                console.log('[Feed] before writing to indexddb, data:', post);
                 //write data to indexeddb
                 writeData('sync-posts', post)
                     .then(function () {
@@ -122,11 +124,13 @@ form.addEventListener('submit', function (event) {
                         snackbarContainer.MaterialSnackbar.showSnackbar(data);
                     })
                     .catch(function (error) {
-                        console.log(error);
+                        console.log('[Feed] error:', error);
                     });
-            });
+            }).catch(function (error) {
+            console.log('[Feed] sw not ready:', error);
+        });
     } else {
-        sendData();
+        // sendData();
     }
 });
 
@@ -228,8 +232,6 @@ function closeCreatePostModal() {
     locationBtn.style.display = 'inline';
     locationLoader.style.display = 'none';
     captureButton.style.display = 'inline';
-    titleInput.value = '';
-    locationInput.value = '';
     if (videoPlayer.srcObject) {
         videoPlayer.srcObject.getVideoTracks().forEach(track => {
             track.stop();
@@ -288,20 +290,19 @@ function createCard(data) {
 function updateUI(data) {
     console.log('[Feed] updating UI');
     clearCards();
-    if (data && data.length > 0) {
-        var dataArray = [];
-        for (var key in data) {
-            dataArray.push(data[key]);
-        }
-        for (var i = 0; i < dataArray.length; i++) {
-            createCard(dataArray[i]);
-        }
-    } else {
-        console.log('[Feed] no cards will be created because no data is available');
-        document.querySelector('#share-moments-headline').innerText = 'Currently no moments have been captured!';
+    var dataArray = [];
+    for (var key in data) {
+        dataArray.push(data[key]);
     }
+    for (var i = 0; i < dataArray.length; i++) {
+        createCard(dataArray[i]);
+    }
+
+    // console.log('[Feed] no cards will be created because no data is available');
+    // document.querySelector('#share-moments-headline').innerText = 'Currently no moments have been captured!';
 }
 
+// TODO update this method
 function sendData() {
     var postData = new FormData();
     var id = new Date().toISOString();
@@ -316,7 +317,7 @@ function sendData() {
         method: 'POST',
         body: postData
     }).then(function (res) {
-        console.log('Sent data', res);
+        console.log('[Feed] Sent data the normal way', res);
         updateUI();
     });
 }

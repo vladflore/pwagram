@@ -1,8 +1,8 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v74';
-const CACHE_DYNAMIC_NAME = 'dynamic-v2';
+const CACHE_STATIC_NAME = 'static-v82';
+const CACHE_DYNAMIC_NAME = 'dynamic-v3';
 
 var STATIC_FILES = [
     '/',
@@ -46,8 +46,7 @@ self.addEventListener('install', function (event) {
             })
     );
 
-    // event.waitUntil(self.skipWaiting()); -> install the sw without waiting for reload
-
+    event.waitUntil(self.skipWaiting()); // install the sw without waiting for reload
 });
 
 self.addEventListener('activate', function (event) {
@@ -211,6 +210,7 @@ self.addEventListener('sync', function (event) {
         event.waitUntil(
             readAllData('sync-posts')
                 .then(function (data) {
+                    // console.log('[SW - Sync] data:', data);
                     for (var dt of data) {
                         var postData = new FormData();
                         postData.append('id', dt.id);
