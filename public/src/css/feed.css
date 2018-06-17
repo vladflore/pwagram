@@ -14,8 +14,9 @@
 }
 
 #create-post video, #create-post canvas {
-  width: 512px;
-  max-width: 100%;
+  width: 320px;
+  height: 240px;
+  /*max-width: 100%;*/
   display: none;
   margin: auto;
 }
