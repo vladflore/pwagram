@@ -84,3 +84,7 @@
     height: 200px;
   }
 }
+
+.mdl-layout__header-row {
+  padding: 0 15px 0 80px;
+}

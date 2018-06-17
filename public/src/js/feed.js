@@ -134,15 +134,15 @@ form.addEventListener('submit', function (event) {
     }
 });
 
-fetch(url)
-    .then(function (res) {
-        return res.json();
-    })
-    .then(function (data) {
-        networkDataReceived = true;
-        console.log('[Feed] data from server', data);
-        updateUI(data);
-    });
+fetch(url).then(function (res) {
+    return res.json();
+}).then(function (data) {
+    networkDataReceived = true;
+    console.log('[Feed] data from server', data);
+    updateUI(data);
+}).catch(function (error) {
+    console.log('[Fetch] error', error);
+});
 
 
 if ('indexedDB' in window) {

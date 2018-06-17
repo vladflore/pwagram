@@ -1,8 +1,8 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v88';
-const CACHE_DYNAMIC_NAME = 'dynamic-v8';
+const CACHE_STATIC_NAME = 'static-v94';
+const CACHE_DYNAMIC_NAME = 'dynamic-v13';
 
 var STATIC_FILES = [
     '/',
@@ -129,12 +129,12 @@ self.addEventListener('fetch', function (event) {
                     return caches.match(event.request)
                 })
                 .catch(function (error) {
-                    // console.log('[SW - fetch] OFFLINE return from static cache:' + event.request.url);
+                    console.log('[SW - fetch] OFFLINE return from static cache:' + event.request.url);
                     if (event.request.url.includes('app.css')) {
-                        // console.log('[SW - fetch] app.css -> app-offline.css');
+                        console.log('[SW - fetch] app.css -> app-offline.css');
                         return caches.match('/src/css/app-offline.css');
                     } else if (event.request.url.includes('help.css')) {
-                        // console.log('[SW - fetch] help.css -> help-offline.css');
+                        console.log('[SW - fetch] help.css -> help-offline.css');
                         return caches.match('/src/css/help-offline.css');
                     } else {
                         return caches.match(event.request)
