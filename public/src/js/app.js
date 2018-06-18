@@ -119,6 +119,12 @@ function configurePushSub() {
             // subscription = endpoint of that browser vendor server to which we push our push messages
             //only the server with the correponding private key may send push notifications
 
+            for (var i = 0; i < enableNotificationButtons.length; i++) {
+                enableNotificationButtons[i].textContent = 'Disable notifications';
+                enableNotificationButtons[i].removeEventListener('click', subscribeForNotification);
+                enableNotificationButtons[i].addEventListener('click', unsubscribeFromNotification);
+            }
+
             // create new subscription
             return swReg.pushManager.subscribe({
                 userVisibleOnly: true,
@@ -138,11 +144,6 @@ function configurePushSub() {
             if (res.ok) {
                 console.log('[Notification] subscription has been saved!');
                 displayConfirmNotification();
-                for (var i = 0; i < enableNotificationButtons.length; i++) {
-                    enableNotificationButtons[i].textContent = 'Disable notifications';
-                    enableNotificationButtons[i].removeEventListener('click', subscribeForNotification);
-                    enableNotificationButtons[i].addEventListener('click', unsubscribeFromNotification);
-                }
                 currentSubscription = sub;
             } else {
                 console.log('[Notification] Cannot save subscription!');
