@@ -119,12 +119,6 @@ function configurePushSub() {
             // subscription = endpoint of that browser vendor server to which we push our push messages
             //only the server with the correponding private key may send push notifications
 
-            for (var i = 0; i < enableNotificationButtons.length; i++) {
-                enableNotificationButtons[i].textContent = 'Disable notifications';
-                enableNotificationButtons[i].removeEventListener('click', subscribeForNotification);
-                enableNotificationButtons[i].addEventListener('click', unsubscribeFromNotification);
-            }
-
             // create new subscription
             return swReg.pushManager.subscribe({
                 userVisibleOnly: true,
@@ -133,6 +127,13 @@ function configurePushSub() {
         }).then(function (sub) {
         // save the subscription
         console.log('[Notification] saving subscription: ', sub);
+
+        for (var i = 0; i < enableNotificationButtons.length; i++) {
+            enableNotificationButtons[i].textContent = 'Disable notifications';
+            enableNotificationButtons[i].removeEventListener('click', subscribeForNotification);
+            enableNotificationButtons[i].addEventListener('click', unsubscribeFromNotification);
+        }
+
         return fetch('https://udemy-pwagram-29b2e.firebaseio.com/subscriptions.json', {
             method: 'POST',
             headers: {
