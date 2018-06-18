@@ -43,18 +43,18 @@ window.addEventListener('beforeinstallprompt', function (event) {
     return true;
 });
 
-function showIndicator() {
-    console.log('[App] offline');
-    headerElement.className = 'mdl-layout__header offline';
-    mainElement.className = 'mdl-layout__content mat-typography offline';
-}
-
-function hideIndicator() {
-    console.log('[App] online');
-    headerElement.className = 'mdl-layout__header';
-    mainElement.className = 'mdl-layout__content mat-typography';
-}
-
+// function showIndicator() {
+//     console.log('[App] offline');
+//     headerElement.className = 'mdl-layout__header offline';
+//     mainElement.className = 'mdl-layout__content mat-typography offline';
+// }
+//
+// function hideIndicator() {
+//     console.log('[App] online');
+//     headerElement.className = 'mdl-layout__header';
+//     mainElement.className = 'mdl-layout__content mat-typography';
+// }
+//
 // window.addEventListener('online', hideIndicator);
 // window.addEventListener('offline', showIndicator);
 
@@ -85,12 +85,12 @@ if ('Notification' in window && 'serviceWorker' in navigator) {
 function displayConfirmNotification() {
     // if ('serviceWorker' in navigator) {
     var options = {
-        body: 'You have successfully subscribed to the Notification service!',
+        body: 'You have successfully subscribed!',
         data: {
             url: '/help'
         },
         icon: '/src/images/icons/app-icon-96x96.png',
-        image: 'src/images/sf-boat.jpg',
+        image: 'src/images/heidelberg.jpg',
         dir: 'ltr',
         lang: 'en-US', // BCP 47
         vibrate: [100, 50, 200], //vibration, pause, vibration
